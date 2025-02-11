@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/theme-deep-purple.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
+	<style type="text/css">
+		body{
+			margin: auto;
+			padding: 0px;
+			max-width: 440px;
+			background-image: url('assets/images/background.jpg');
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+		}.main{
+			min-height: 100vh;
+		}.logo{
+			width: 100px;
+			vertical-align: middle!important;
+			text-align: left;
+		}.company_logo{
+			width: 100px;
+		}
+		.input{
+			outline: none;
+		}
+		.grid{
+			padding: 4px!important;
+		}
+		.bar .button {
+	      width: 25%;
+	      float: left;
+	    }
+	</style>
+	<title>Login</title>
+</head>
+<body class="light-gray text-gray">
+	<script type="text/javascript" src="assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="assets/js/niceportal.js"></script>
+	<script type="text/javascript" src="assets/js/md5.js"></script>
+
+	<script type="text/javascript" src="config.js"></script>
+
+    <div class="bar theme margin-bottom">
+        <a href="login.html" class="bar-item button">Kembali</a>
+    </div>
+
+    <div class="main container">
+    	<div class="text-theme">Item Details</div>
+        <div id="item_details" class="white border round padding-small margin-bottom"></div>
+        <div id="customer_details">
+        	<div class="text-theme" id="frmMethod" style="display:none;">
+        		Metode Pembayaran
+        		<select id="method" class="input border round margin-bottom"></select>
+        	</div>
+        	<div class="text-theme">
+        		Nama Lengkap
+        		<input type="text" id="name" class="input border round margin-bottom" required>
+        	</div>
+        	<div class="text-theme">
+        		Nomor WhatsApp
+        		<input type="number" id="phone" class="input border round margin-bottom" required>
+        	</div>
+
+        	<button id="btnCheckout" class="button round theme margin-bottom">Buat Pesanan</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    	let nice = new NicePortal();
+    	var url = new URL(window.location.href);
+    	var profile_id = url.searchParams.get('profile_id');
+    	if(profile_id == null){window.location.href = 'login.html';}
+    	$(document).ready((e) => {
+    		// get user info
+    		nice.getData('info').then(info => {
+    			// get profile list
+    			nice.getData('profile').then(profile => {
+    				$.each(profile, (index, row) => {
+    					if(profile_id == row.profile_id){
+    						console.log(row);
+    						$('#item_details').html(`
+    							<table class="table">
+    								<tr><td>Nama Item</td><td>: ${row.name}</td></tr>
+    								<tr><td>Aktif</td><td>: ${row.validity}</td></tr>
+    								<tr><td>Speed</td><td>: ${row['rate-limit-rx']}/${row['rate-limit-tx']}</td></tr>
+    								<tr><td>Harga</td><td>: ${nice.number_format(row.price)}</td></tr>
+    							</table>
+    						`);
+    					}
+    				});
+    			});
+
+    			// get payment method
+    			if(info.payment_gateway == 'duitku'){
+    				nice.getData('method').then(result => {
+    					$.each(result, (index, row) => {
+    						$('#method').append(`<option value="${row.paymentMethod}">${row.paymentName}</option>`);
+    					});
+    					$('#frmMethod').show();
+    				});
+    			}
+
+    			
+
+    			$('#btnCheckout').on('click', (e) => {
+    				var method = $('#method').val();
+	    			var name = $('#name').val();
+	    			var phone = $('#phone').val();
+	    			if(phone == '' 
+					|| name == '' 
+					|| phone.length > 13 
+					|| phone.length < 11
+					|| name.length < 3
+					|| name.length > 16
+					|| typeof name !== 'string'){
+	    				$('#name').focus();
+					}else{
+						var params = {
+							method: method,
+							profile_id: profile_id,
+							name: name,
+							phone: phone,
+							return_url: "$(link-login-only)"
+						}
+						nice.createOrder(params).then(result => {
+							console.log(result);
+							window.location.href = result.paymentUrl;
+						});
+					}
+	    		});
+    		});
+    	});
+    </script>
+</body>
+</html>

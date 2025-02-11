@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/theme-deep-purple.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
+    <style type="text/css">
+       body{
+           margin: auto;
+           padding: 0px;
+           max-width: 440px;
+           background-image: url('assets/images/background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+       }
+       .grid{padding:4px!important;}
+       .bar .bar-item{width:25%;}
+       a{text-decoration: none;}
+       .main{
+          min-height: 100vh;
+          border: 1px solid gray;
+      }
+      .btnicon{
+          padding:5px!important;
+          min-width: 30px!important;
+      }
+      .company{
+          width:95%;
+          border-top-left-radius: 10px;
+          border-top-right-radius: 10px;
+          border-bottom: none;
+          background: rgba(0,0,0,0.0);
+      }
+      .input{outline:none;}
+      a{text-decoration: none;}
+  </style>
+  <title>Login</title>
+</head>
+<body class="small light-gray">
+	<script type="text/javascript" src="assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="assets/js/niceportal.js"></script>
+	<script type="text/javascript" src="assets/js/md5.js"></script>
+	<script type="text/javascript" src="config.js"></script>
+	
+    <form name="sendin" action="$(link-login-only)" method="post">
+        <input type="hidden" name="username" />
+        <input type="hidden" name="password" />
+        <input type="hidden" name="dst" value="$(link-orig)" />
+        <input type="hidden" name="popup" value="true" />
+    </form>
+
+    <script type="text/javascript" src="assets/js/md5.js"></script>
+
+    <div class="main white">
+        <div class="display-container theme padding" style="min-height:125px">
+            <span id="date"></span><span class="right" id="time"></span>
+            <div class="company display-bottommiddle padding white">
+                <table width="100%">
+                    <tr>
+                        <td style="vertical-align:middle;width:38px">
+                            <i class="fa fa-wifi fa-2x text-theme"></i>
+                        </td>
+                        <td style="vertical-align:top">
+                            <div><b id="company">WiFi Hotspot</b></div>
+                            <div><i class="text-gray small">Internet Service Provider</i></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="row margin-top text-gray padding-small small">
+            <div class="col s3 center">
+                <a href="#" id="btnVoucher" class="button small padding-small red round btnicon"><i class="fa fa-ticket fa-lg"></i></a><br>Voucher
+            </div>
+            <div class="col s3 center">
+                <a href="#" id="btnMember" class="button small padding-small blue round btnicon"><i class="fa fa-user fa-lg"></i></a><br>Member
+            </div>
+            <div class="col s3 center">
+                <a href="transaction.html" class="button small padding-small amber text-white round btnicon"><i class="fa fa-shopping-cart fa-lg"></i></a><br>Transaksi
+            </div>
+            <div class="col s3 center">
+                <a href="#" class="button small padding-small teal round btnicon"><i class="fa fa-whatsapp fa-lg"></i></a><br>Kontak
+            </div>
+        </div>
+        
+        <div class="padding">
+            <form name="login" id="login" action="$(link-login-only)" method="post" $(if chap-id) onSubmit="return doLogin()" $(endif)>
+              <input type="hidden" name="dst" value="$(link-orig)" />
+              <input type="hidden" name="popup" value="true" />
+              <table width="100%">
+                <tr>
+                    <td>
+                        <input type="text" name="username" id="username" placeholder="Kode Voucher" class="input border round theme-l5" required>
+                    </td>
+                    <td><button class="button theme round block"><i class="fa fa-arrow-right"></i> Masuk</button></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="hidden" name="password" id="password" placeholder="Password" class="input border round theme-l5">
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class="padding-small">
+        <div class="responsive">
+            <table class="table"><tr id="list_profile"></tr></table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var user = document.getElementById('username');
+    var pass = document.getElementById('password');
+    function set_password(){pass.value = user.value;}
+
+    $(document).ready(function(e){
+        let nice = new NicePortal();
+
+        // get user setting
+        nice.getData('info').then(info => {
+            nice.clear_session = info.clear_session;
+            $('#company').html(info.company);
+
+            // get hotspot profile
+            nice.getData('profile').then(profile => {
+                $.each(profile, (index, row) => {
+                    $('#list_profile').append(`
+                            <td nowrap>
+                                <div class="theme-l5 text-gray border round padding" style="width:200px">
+                                    <a href="checkout.html?profile_id=${row.profile_id}" class="button small padding theme round right"><i class="fa fa-shopping-cart"></i> Beli</a>
+                                    <b class="text-theme">${row.name}</b><br>
+                                    - Aktif ${row.validity}<br>
+                                    - Speed ${row['rate-limit-rx']}/${row['rate-limit-tx']}<br>
+                                    <b>Rp ${nice.number_format(row.price)}</b>
+                                </div>
+                            </td>
+                    `);
+                });
+            });
+        });
+
+        user.onkeyup = set_password;
+        user.onchange = set_password;
+
+            // login mode voucher
+        $('#btnVoucher').on('click', (e) => {
+            user.onkeyup = set_password;
+            user.onchange = set_password;
+            user.placeholder = 'Kode Voucher';
+            pass.type = 'hidden';
+        });
+
+            // login mode username & password
+        $('#btnMember').on('click', (e) => {
+            user.onkeyup = '';
+            user.onchange = '';
+            user.placeholder = 'Username';
+            pass.type = 'password';
+        });
+
+            // login submit
+        $('#login').on('submit', (e) => {
+            if(nice.clear_session == 'true'){
+               var username = document.login.username.value;
+               var password = document.login.password.value;
+
+               nice.clearSession(username).then(result => {
+                  console.log(result);
+                  document.sendin.username.value = document.login.username.value;
+                  document.sendin.password.value = hexMD5('$(chap-id)' + document.login.password.value + '$(chap-challenge)');
+                  document.sendin.submit();
+                  return false;
+              });
+           }
+           else{
+            document.sendin.username.value = document.login.username.value;
+            document.sendin.password.value = hexMD5('$(chap-id)' + document.login.password.value + '$(chap-challenge)');
+            document.sendin.submit();
+            return false;
+        }
+        return false;
+    });
+    });
+
+
+    function showTime() {
+        var a_p = "";
+        var today = new Date();
+        var curr_hour = today.getHours();
+        var curr_minute = today.getMinutes();
+        var curr_second = today.getSeconds();
+        if (curr_hour < 12) {
+            a_p = "AM";
+        } else {
+            a_p = "PM";
+        }
+        if (curr_hour == 0) {
+            curr_hour = 12;
+        }
+        if (curr_hour > 12) {
+            curr_hour = curr_hour - 12;
+        }
+        curr_hour = checkTime(curr_hour);
+        curr_minute = checkTime(curr_minute);
+        curr_second = checkTime(curr_second);
+        $("#time").html(curr_hour + ":" + curr_minute + ":" + curr_second + " " + a_p);
+    }
+
+    function checkTime(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+    }
+    setInterval(showTime, 500);
+
+    var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    var myDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum&#39;at', 'Sabtu'];
+    var date = new Date();
+    var day = date.getDate();
+    var month = date.getMonth();
+    var thisDay = date.getDay(),
+    thisDay = myDays[thisDay];
+    var yy = date.getYear();
+    var year = (yy < 1000) ? yy + 1900 : yy;
+    $("#date").html(thisDay + ', ' + day + ' ' + months[month] + ' ' + year);
+</script>
+</body>
+</html>
