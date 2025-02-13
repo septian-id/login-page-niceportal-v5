@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/theme-deep-purple.css">
     <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/toastr/toastr.min.css">
     <style type="text/css">
        body{
            margin: auto;
@@ -42,6 +43,7 @@
 </head>
 <body class="small light-gray">
 	<script type="text/javascript" src="assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="assets/toastr/toastr.min.js"></script>
 	<script type="text/javascript" src="assets/js/niceportal.js"></script>
 	<script type="text/javascript" src="assets/js/md5.js"></script>
 	<script type="text/javascript" src="config.js"></script>
@@ -230,5 +232,6 @@
     var year = (yy < 1000) ? yy + 1900 : yy;
     $("#date").html(thisDay + ', ' + day + ' ' + months[month] + ' ' + year);
 </script>
+$(if error)<script type="text/javascript">toastr["error"]("$(error)", "Login Gagal");</script>$(endif)
 </body>
 </html>
